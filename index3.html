@@ -278,9 +278,10 @@
             <div class="p-5 space-y-4">
                 <div class="flex items-start justify-between">
                     <div class="space-y-0.5">
-                        <span class="text-xs text-gray-500 font-medium">De R$ 4.773,41 por</span>
+                        <p class="text-xs text-black font-medium">Condição especial para quitação:</p>
+                        <span class="text-xs text-gray-500 font-medium">Regularize toda a sua pendência pelo valor especial de:</span>
                         <div class="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">R$ 147,64</div>
-                        <p class="text-xs text-emerald-600 font-medium">Economize até R$ 4.625,77</p>
+                        <p class="text-xs text-emerald-600 font-medium">Valor final para quitação total da sua pendência.  </p>
                         <p class="text-[11px] text-gray-400">Dívida negativada no CPF</p>
                     </div>
                 </div>
@@ -1038,10 +1039,11 @@
                                 </div>
 
                                 <div class="space-y-0.5"> 
-    <p class="text-[11px] text-gray-400">De R$ 4.773,41 por</p> 
+                            <p class="text-xs text-black font-medium">Condição especial para quitação:</p>
+                        <span class="text-xs text-gray-500 font-medium">Regularize toda a sua pendência pelo valor especial de:</span>
     <p class="text-2xl font-extrabold text-gray-900">R$ 147,64</p> 
     <div class="flex items-center justify-between pt-1"> 
-        <p class="text-[11px] text-emerald-600 font-semibold">Economize até R$ 4.625,77</p> 
+        <p class="text-xs text-emerald-600 font-medium">Valor final para quitação total da sua pendência.  </p> 
         <span class="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-0.5">↓ 98%</span> 
     </div> 
 </div>
@@ -1224,12 +1226,16 @@
                             <h3 class="text-lg font-extrabold text-gray-900">Entenda sua negociação</h3>
                             <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm space-y-3 text-xs sm:text-sm">
                                 <div class="flex items-center justify-between text-gray-600">
-                                    <span>Valor da dívida</span>
-                                    <span class="font-semibold text-gray-800">R$ 4.773,41</span>
+                                    <span>Condição da negociação</span>
+                                    <span class="font-semibold text-gray-800">Acordo e Oferta Especial</span>
+                                </div>
+                                <div class="flex items-center justify-between text-gray-600">
+                                    <span>Benefício da negociação</span>
+                                    <span class="font-semibold text-gray-800">Quitação total</span>
                                 </div>
                                 <div class="flex items-center justify-between text-emerald-600">
-                                    <span>Desconto de 98%</span>
-                                    <span class="font-bold">R$ 4.625,77</span>
+                                    <span>Desconto:</span>
+                                    <span class="font-bold">98%</span>
                                 </div>
                                 <div class="border-t border-gray-100 pt-3 flex items-center justify-between text-gray-900 font-extrabold">
                                     <span>Total a pagar</span>
@@ -1266,21 +1272,71 @@
                                 </div>
                             </div>
 
-<button onclick="window.location.href='https://pay.kiwify.com.br/KaqHOEX?hideCard=true&amp;region=br'" class="w-full bg-serasa-pink text-white font-bold text-sm py-3.5 rounded-xl hover:bg-pink-700 transition shadow">
-    Fechar acordo
-</button>
-
 <div class="flex items-start justify-center gap-2">
-    <input 
-        type="checkbox" 
+    <input
+        type="checkbox"
         id="aceite-termos"
         class="mt-0.5 w-4 h-4 accent-[#e80070] cursor-pointer"
     >
-    <p class="text-[11px] text-gray-500 text-left leading-normal"> 
-        Ao continuar, você aceita os 
-        <a href="#" class="text-serasa-pink underline font-semibold">termos Nu Financeira S.A.</a> 
+
+    <p class="text-[11px] text-gray-500 text-left leading-normal">
+        Ao continuar, você aceita os
+        <a href="#" id="abrir-termos" class="text-serasa-pink underline font-semibold">
+            termos da negociação
+        </a>
     </p>
 </div>
+
+<!-- Modal -->
+<div
+    id="modal-termos"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4"
+>
+    <div class="relative w-full max-w-2xl max-h-[85vh] overflow-hidden rounded-2xl bg-white shadow-2xl">
+
+        <!-- Cabeçalho -->
+        <div class="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+            <h2 class="text-lg font-extrabold text-gray-900">
+                Termos da negociação
+            </h2>
+
+            <button
+                type="button"
+                id="fechar-termos"
+                class="flex h-9 w-9 items-center justify-center rounded-full text-2xl text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                aria-label="Fechar"
+            >
+                &times;
+            </button>
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="max-h-[calc(85vh-73px)] overflow-y-auto px-5 py-5 text-sm leading-relaxed text-gray-700">
+            <h3 class="mb-3 text-base font-bold text-gray-900">
+                Informações sobre a negociação
+            </h3>
+
+            <p class="mb-4">
+                Esta plataforma permite a visualização de condições de negociação
+                disponibilizadas para regularização de pendências, conforme as
+                condições apresentadas no momento da negociação.
+            </p>
+
+            <p class="mb-4">
+                As condições, valores e formas de pagamento apresentados são
+                específicos da negociação disponibilizada ao consumidor.
+            </p>
+
+            <p>
+                <strong>Importante</strong> destacar também que, as ofertas de negociação de dívidas apresentadas na plataforma Serasa Limpa Nome serão visualizadas apenas por Você mediante acesso pessoal com login e senha, não podendo ser visualizadas por terceiros.
+            </p>
+        </div>
+    </div>
+</div>
+
+<button onclick="window.location.href='https://pay.kiwify.com.br/KaqHOEX?hideCard=true&amp;region=br'" class="w-full bg-serasa-pink text-white font-bold text-sm py-3.5 rounded-xl hover:bg-pink-700 transition shadow">
+    Fechar acordo
+</button>
                         </div>
                     </div>
                 </div>
@@ -2910,6 +2966,28 @@
             fecharModalServicoIndisponivel();
         }
 
+    });
+
+    const abrirTermos = document.getElementById('abrir-termos');
+    const fecharTermos = document.getElementById('fechar-termos');
+    const modalTermos = document.getElementById('modal-termos');
+
+    abrirTermos.addEventListener('click', function (e) {
+        e.preventDefault();
+        modalTermos.classList.remove('hidden');
+        modalTermos.classList.add('flex');
+    });
+
+    fecharTermos.addEventListener('click', function () {
+        modalTermos.classList.add('hidden');
+        modalTermos.classList.remove('flex');
+    });
+
+    modalTermos.addEventListener('click', function (e) {
+        if (e.target === modalTermos) {
+            modalTermos.classList.add('hidden');
+            modalTermos.classList.remove('flex');
+        }
     });
 
 </script>
