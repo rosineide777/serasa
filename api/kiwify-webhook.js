@@ -1,44 +1,65 @@
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
-
     return res.status(405).json({
       success: false,
       message: "Método não permitido."
     });
   }
 
-  const payload = req.body;
+  try {
+    const payload = req.body;
 
-  if (!payload || typeof payload !== "object") {
-    return res.status(400).json({
-      success: false,
-      message: "Payload inválido."
+    if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+      return res.status(400).json({
+        success: false,
+        message: "Payload inválido."
+      });
+    }
+
+    const event = payload.webhook_event_type;
+    const orderId = payload.order_id;
+    const status = payload.order_status;
+
+    // Não registrar dados pessoais ou informações de pagamento.
+    console.log("[KIWIFY_WEBHOOK]", {
+      received: true,
+      event: typeof event === "string" ? event : "unknown",
+      orderId: typeof orderId === "string" ? orderId : null,
+      status: typeof status === "string" ? status : "unknown",
+      timestamp: new Date().toISOString()
     });
-  }
 
-  const event = payload.webhook_event_type;
-  const status = payload.order_status;
-  const orderId = payload.order_id;
+    if (typeof event !== "string" || typeof orderId !== "string" || !orderId.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Evento ou identificador do pedido inválido."
+      });
+    }
 
-  if (event !== "order_approved" || status !== "paid") {
+    if (event !== "order_approved" || status !== "paid") {
+      return res.status(200).json({
+        success: true,
+        processed: false,
+        message: "Evento recebido; não é uma compra aprovada."
+      });
+    }
+
+    // A venda ainda não é processada: faltam autenticação,
+    // deduplicação persistente e conexão com os provedores.
     return res.status(200).json({
       success: true,
       processed: false,
-      message: "Evento recebido, mas não é uma compra aprovada."
+      order_id: orderId,
+      message: "Compra aprovada recebida; processamento pendente."
     });
-  }
+  } catch (error) {
+    console.error("[KIWIFY_WEBHOOK] Erro interno:", error.message);
 
-  if (!orderId) {
-    return res.status(400).json({
+    return res.status(500).json({
       success: false,
-      message: "Identificador do pedido ausente."
+      message: "Erro interno ao receber o webhook."
     });
   }
-
-  return res.status(200).json({
-    success: true,
-    processed: false,
-    message: "Compra aprovada recebida. Integrações ainda não configuradas."
-  });
 }
