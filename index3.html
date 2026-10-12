@@ -2964,5 +2964,92 @@
 
 </script>
 
+
+<script>
+(function () {
+    const PARAMETROS_BEMOB = [
+        "subid",
+        "cid",
+        "clickid",
+        "sub_id"
+    ];
+
+    const PARAMETROS_ANUNCIO = [
+        "fbclid",
+        "gclid",
+        "gbraid",
+        "wbraid",
+        "ttclid"
+    ];
+
+    const params = new URLSearchParams(window.location.search);
+
+    function salvarParametro(nome) {
+        const valor = params.get(nome);
+
+        if (valor) {
+            try {
+                localStorage.setItem(nome, valor);
+            } catch (erro) {
+                console.warn("[Tracking] Não foi possível salvar:", nome);
+            }
+        }
+    }
+
+    PARAMETROS_BEMOB.forEach(salvarParametro);
+    PARAMETROS_ANUNCIO.forEach(salvarParametro);
+
+    const subid =
+        params.get("subid") ||
+        params.get("cid") ||
+        params.get("clickid") ||
+        params.get("sub_id");
+
+    if (subid) {
+        localStorage.setItem("bemob_subid", subid);
+    }
+
+    // Disponibiliza os identificadores para o código de integração futuro.
+    window.TRACKING_DATA = {
+        bemobSubid: localStorage.getItem("bemob_subid") || "",
+        fbclid: localStorage.getItem("fbclid") || "",
+        gclid: localStorage.getItem("gclid") || "",
+        gbraid: localStorage.getItem("gbraid") || "",
+        wbraid: localStorage.getItem("wbraid") || "",
+        ttclid: localStorage.getItem("ttclid") || ""
+    };
+
+    // INJEÇÃO AUTOMÁTICA NO CHECKOUT DA KIWIFY
+    document.addEventListener("DOMContentLoaded", function () {
+        const subidAtual = window.TRACKING_DATA.bemobSubid;
+        const ttclidAtual = window.TRACKING_DATA.ttclid;
+        const fbclidAtual = window.TRACKING_DATA.fbclid;
+        const gclidAtual = window.TRACKING_DATA.gclid;
+
+        if (subidAtual || ttclidAtual || fbclidAtual || gclidAtual) {
+            // Seleciona todos os links ou botões que apontam para a Kiwify
+            const botoesCheckout = document.querySelectorAll('a[href*="kiwify"]');
+
+            botoesCheckout.forEach(link => {
+                try {
+                    const url = new URL(link.href);
+
+                    // Adiciona os parâmetros na URL do checkout da Kiwify
+                    if (subidAtual) url.searchParams.set("subid", subidAtual);
+                    if (ttclidAtual) url.searchParams.set("ttclid", ttclidAtual);
+                    if (fbclidAtual) url.searchParams.set("fbclid", fbclidAtual);
+                    if (gclidAtual) url.searchParams.set("gclid", gclidAtual);
+
+                    link.href = url.toString();
+                } catch (erro) {
+                    console.warn("[Tracking] Erro ao injetar parâmetros no link do checkout:", erro);
+                }
+            });
+        }
+    });
+})();
+</script>
+
+
 </body>
 </html>

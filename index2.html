@@ -536,5 +536,76 @@ document.querySelectorAll('.btn-close-modal').forEach(btn => {
 });
     </script>
 
+    
+<script>
+(function () {
+    // 1. LISTA DE PARÂMETROS
+    const PARAMETROS_BEMOB = ["subid", "cid", "clickid", "sub_id"];
+    const PARAMETROS_ANUNCIO = ["fbclid", "gclid", "gbraid", "wbraid", "ttclid"];
+
+    const params = new URLSearchParams(window.location.search);
+
+    // 2. SALVA OS PARÂMETROS DA URL NO LOCALSTORAGE
+    function salvarParametro(nome) {
+        const valor = params.get(nome);
+        if (valor) {
+            try {
+                localStorage.setItem(nome, valor);
+            } catch (erro) {
+                console.warn("[Tracking] Não foi possível salvar:", nome);
+            }
+        }
+    }
+
+    PARAMETROS_BEMOB.forEach(salvarParametro);
+    PARAMETROS_ANUNCIO.forEach(salvarParametro);
+
+    const subid =
+        params.get("subid") ||
+        params.get("cid") ||
+        params.get("clickid") ||
+        params.get("sub_id");
+
+    if (subid) {
+        localStorage.setItem("bemob_subid", subid);
+    }
+
+    // 3. RECUPERA OS DADOS GUARDADOS
+    const bemobSubid = localStorage.getItem("bemob_subid") || "";
+    const fbclid = localStorage.getItem("fbclid") || "";
+    const gclid = localStorage.getItem("gclid") || "";
+    const gbraid = localStorage.getItem("gbraid") || "";
+    const wbraid = localStorage.getItem("wbraid") || "";
+    const ttclid = localStorage.getItem("ttclid") || "";
+
+    // 4. ATUALIZA OS LINKS DA PÁGINA AUTOMATICAMENTE
+    document.addEventListener("DOMContentLoaded", function () {
+        // Seleciona todos os links da página (botões para a próxima página ou checkout)
+        const links = document.querySelectorAll("a[href]");
+
+        links.forEach(link => {
+            try {
+                // Filtra apenas links internos (ex: index2.html, index3.html) ou links do checkout
+                if (link.href.startsWith("javascript:") || link.href.startsWith("#")) return;
+
+                const url = new URL(link.href, window.location.origin);
+
+                if (bemobSubid) url.searchParams.set("cid", bemobSubid);
+                if (fbclid) url.searchParams.set("fbclid", fbclid);
+                if (gclid) url.searchParams.set("gclid", gclid);
+                if (gbraid) url.searchParams.set("gbraid", gbraid);
+                if (wbraid) url.searchParams.set("wbraid", wbraid);
+                if (ttclid) url.searchParams.set("ttclid", ttclid);
+
+                link.href = url.toString();
+            } catch (e) {
+                console.warn("[Tracking] Erro ao atualizar link:", link.href, e);
+            }
+        });
+    });
+})();
+</script>
+
+
 </body>
 </html>
