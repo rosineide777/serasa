@@ -1,11 +1,5 @@
-
 import { extractTrackingId } from '../lib/tracking.js';
-import { isDuplicateOrder } from '../lib/deduplication.js';
 import { validateWebhookAuth } from '../lib/auth.js';
-import { sendBeMobPostback } from './bemob-postback.js';
-import { sendTikTokConversion } from './conversions/tiktok.js';
-import { sendMetaConversion } from './conversions/meta.js';
-import { sendGoogleConversion } from './conversions/google.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -16,6 +10,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    // 1. Valida a assinatura de segurança do webhook
     if (!validateWebhookAuth(req)) {
       return res.status(401).json({
         success: false,
@@ -32,6 +27,7 @@ export default async function handler(req, res) {
       });
     }
 
+    // 2. Verifica se a compra foi paga/aprovada
     const status = String(
       body.order_status || body.status || ''
     ).toLowerCase();
@@ -43,9 +39,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const orderId = String(
-      body.order_id || body.id || ''
-    );
+    const orderId = String(body.order_id || body.id || '');
 
     if (!orderId) {
       return res.status(400).json({
@@ -54,8 +48,18 @@ export default async function handler(req, res) {
       });
     }
 
+    // 3. Extrai o ID de rastreamento do BeMob (clickid / subid / src)
     const subid = extractTrackingId(body);
 
+    if (!subid) {
+      console.log('Nenhum tracking ID (clickid/src) encontrado no webhook.');
+      return res.status(200).json({
+        success: true,
+        message: 'Sem tracking ID para disparar postback'
+      });
+    }
+
+    // 4. Extrai o valor da comissão/venda
     const rawValue =
       body.Commissions?.charge_amount ??
       body.price ??
@@ -63,76 +67,42 @@ export default async function handler(req, res) {
       0;
 
     const numericValue = Number(rawValue);
-
-    if (!Number.isFinite(numericValue) || numericValue < 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Valor do pedido inválido'
-      });
-    }
-
     const value = body.Commissions?.charge_amount != null
-      ? numericValue / 100
-      : numericValue;
+      ? (numericValue / 100).toFixed(2)
+      : numericValue.toFixed(2);
 
-    const customer =
-      body.Customer ||
-      body.customer ||
-      body.CustomerData ||
-      {};
+    // 5. Pega a URL do Postback do BeMob configurada na Vercel
+    const bemobBaseUrl = process.env.BEMOB_POSTBACK_URL;
 
-    const customerData = {
-      email: customer.email || '',
-      phone: customer.mobile || customer.phone || '',
-      ip: customer.ip ||
-        String(req.headers['x-forwarded-for'] || '')
-          .split(',')[0]
-          .trim(),
-      userAgent: req.headers['user-agent'] || '',
-      value,
-      currency: body.currency || 'BRL',
-      orderId,
-      subid
-    };
-
-    if (await isDuplicateOrder(orderId)) {
-      return res.status(200).json({
-        success: true,
-        message: 'Pedido já processado anteriormente.'
+    if (!bemobBaseUrl) {
+      console.error('BEMOB_POSTBACK_URL não configurada nas variáveis de ambiente.');
+      return res.status(500).json({
+        success: false,
+        error: 'Configuração do BeMob ausente no servidor'
       });
     }
 
-    const results = await Promise.allSettled([
-      sendBeMobPostback({ subid, value, orderId }),
-      sendTikTokConversion(customerData),
-      sendMetaConversion(customerData),
-      sendGoogleConversion(customerData)
-    ]);
+    // Monta a URL de Postback para o BeMob
+    const separator = bemobBaseUrl.includes('?') ? '&' : '?';
+    const postbackUrl = `${bemobBaseUrl}${separator}cid=${encodeURIComponent(subid)}&payout=${value}&txid=${encodeURIComponent(orderId)}`;
 
-    const destinations = ['BeMob', 'TikTok', 'Meta', 'Google'];
+    console.log(`Disparando Postback para o BeMob: ${postbackUrl}`);
 
-    const failures = results
-      .map((result, index) => {
-        if (result.status === 'rejected') {
-          console.error(
-            `Falha no envio para ${destinations[index]}:`,
-            result.reason
-          );
-          return destinations[index];
-        }
+    // Dispara o Postback S2S para o BeMob
+    const response = await fetch(postbackUrl);
 
-        return null;
-      })
-      .filter(Boolean);
+    if (!response.ok) {
+      throw new Error(`Erro ao enviar Postback BeMob (Status: ${response.status})`);
+    }
+
+    console.log('Postback enviado com sucesso para o BeMob!');
 
     return res.status(200).json({
-      success: failures.length === 0,
+      success: true,
       orderId,
-      message: failures.length === 0
-        ? 'Processamento concluído.'
-        : 'Webhook recebido, mas houve falha em um ou mais destinos.',
-      failedDestinations: failures
+      message: 'Postback enviado ao BeMob com sucesso.'
     });
+
   } catch (error) {
     console.error('Erro ao processar webhook Kiwify:', error);
 
