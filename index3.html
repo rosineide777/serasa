@@ -1333,9 +1333,13 @@
     </div>
 </div> 
 
-<button onclick="window.location.href='https://pay.kiwify.com.br/KaqHOEX?hideCard=true&amp;region=br'" class="w-full bg-serasa-pink text-white font-bold text-sm py-3.5 rounded-xl hover:bg-pink-700 transition shadow">
+
+<button
+    onclick="abrirCheckoutKiwify()"
+    class="w-full bg-serasa-pink text-white font-bold text-sm py-3.5 rounded-xl hover:bg-pink-700 transition shadow">
     Fechar acordo
 </button>
+
                         </div>
                     </div>
                 </div>
@@ -2965,6 +2969,7 @@
 </script>
 
 
+
 <script>
 (function () {
     const PARAMETROS_BEMOB = [
@@ -2984,6 +2989,7 @@
 
     const params = new URLSearchParams(window.location.search);
 
+    // 1. SALVA OS PARÂMETROS RECEBIDOS NA URL
     function salvarParametro(nome) {
         const valor = params.get(nome);
 
@@ -2991,7 +2997,10 @@
             try {
                 localStorage.setItem(nome, valor);
             } catch (erro) {
-                console.warn("[Tracking] Não foi possível salvar:", nome);
+                console.warn(
+                    "[Tracking] Não foi possível salvar:",
+                    nome
+                );
             }
         }
     }
@@ -2999,6 +3008,7 @@
     PARAMETROS_BEMOB.forEach(salvarParametro);
     PARAMETROS_ANUNCIO.forEach(salvarParametro);
 
+    // 2. SALVA O IDENTIFICADOR DO BEMOB
     const subid =
         params.get("subid") ||
         params.get("cid") ||
@@ -3006,49 +3016,135 @@
         params.get("sub_id");
 
     if (subid) {
-        localStorage.setItem("bemob_subid", subid);
+        try {
+            localStorage.setItem("bemob_subid", subid);
+        } catch (erro) {
+            console.warn(
+                "[Tracking] Não foi possível salvar o subid."
+            );
+        }
     }
 
-    // Disponibiliza os identificadores para o código de integração futuro.
-    window.TRACKING_DATA = {
-        bemobSubid: localStorage.getItem("bemob_subid") || "",
-        fbclid: localStorage.getItem("fbclid") || "",
-        gclid: localStorage.getItem("gclid") || "",
-        gbraid: localStorage.getItem("gbraid") || "",
-        wbraid: localStorage.getItem("wbraid") || "",
-        ttclid: localStorage.getItem("ttclid") || ""
-    };
+    // 3. RECUPERA OS IDENTIFICADORES SALVOS
+    function obterTracking() {
+        const tracking = {};
 
-    // INJEÇÃO AUTOMÁTICA NO CHECKOUT DA KIWIFY
-    document.addEventListener("DOMContentLoaded", function () {
-        const subidAtual = window.TRACKING_DATA.bemobSubid;
-        const ttclidAtual = window.TRACKING_DATA.ttclid;
-        const fbclidAtual = window.TRACKING_DATA.fbclid;
-        const gclidAtual = window.TRACKING_DATA.gclid;
+        try {
+            tracking.bemobSubid =
+                localStorage.getItem("bemob_subid") ||
+                localStorage.getItem("subid") ||
+                localStorage.getItem("cid") ||
+                localStorage.getItem("clickid") ||
+                localStorage.getItem("sub_id") ||
+                "";
 
-        if (subidAtual || ttclidAtual || fbclidAtual || gclidAtual) {
-            // Seleciona todos os links ou botões que apontam para a Kiwify
-            const botoesCheckout = document.querySelectorAll('a[href*="kiwify"]');
+            PARAMETROS_ANUNCIO.forEach(function (nome) {
+                tracking[nome] =
+                    localStorage.getItem(nome) || "";
+            });
+        } catch (erro) {
+            console.warn(
+                "[Tracking] Não foi possível recuperar os parâmetros."
+            );
 
-            botoesCheckout.forEach(link => {
-                try {
-                    const url = new URL(link.href);
-
-                    // Adiciona os parâmetros na URL do checkout da Kiwify
-                    if (subidAtual) url.searchParams.set("src", subidAtual);
-                    if (ttclidAtual) url.searchParams.set("ttclid", ttclidAtual);
-                    if (fbclidAtual) url.searchParams.set("fbclid", fbclidAtual);
-                    if (gclidAtual) url.searchParams.set("gclid", gclidAtual);
-
-                    link.href = url.toString();
-                } catch (erro) {
-                    console.warn("[Tracking] Erro ao injetar parâmetros no link do checkout:", erro);
-                }
+            tracking.bemobSubid = "";
+            PARAMETROS_ANUNCIO.forEach(function (nome) {
+                tracking[nome] = "";
             });
         }
-    });
+
+        return tracking;
+    }
+
+    window.TRACKING_DATA = obterTracking();
+
+    // 4. PREPARA A URL DO CHECKOUT DA KIWIFY
+    function criarUrlCheckout() {
+        const url = new URL(
+            "https://pay.kiwify.com.br/KaqHOEX?hideCard=true&region=br"
+        );
+
+        const tracking = obterTracking();
+
+        // Parâmetros de rastreamento da Kiwify/BeMob.
+        if (tracking.bemobSubid) {
+            url.searchParams.set("src", tracking.bemobSubid);
+        }
+
+        // Preserva os identificadores de anúncio na URL.
+        PARAMETROS_ANUNCIO.forEach(function (nome) {
+            if (tracking[nome]) {
+                url.searchParams.set(nome, tracking[nome]);
+            }
+        });
+
+        return url;
+    }
+
+    // 5. FUNÇÃO USADA PELO BOTÃO DE CHECKOUT
+    window.abrirCheckoutKiwify = function () {
+        const url = criarUrlCheckout();
+        window.location.href = url.toString();
+    };
+
+    // 6. ATUALIZA LINKS QUE APONTAM PARA A KIWIFY
+    function atualizarLinksCheckout() {
+        const links = document.querySelectorAll("a[href]");
+
+        links.forEach(function (link) {
+            try {
+                const url = new URL(
+                    link.href,
+                    window.location.href
+                );
+
+                if (
+                    url.hostname !== "pay.kiwify.com.br" &&
+                    !url.hostname.endsWith(".kiwify.com.br")
+                ) {
+                    return;
+                }
+
+                const tracking = obterTracking();
+
+                if (tracking.bemobSubid) {
+                    url.searchParams.set(
+                        "src",
+                        tracking.bemobSubid
+                    );
+                }
+
+                PARAMETROS_ANUNCIO.forEach(function (nome) {
+                    if (tracking[nome]) {
+                        url.searchParams.set(
+                            nome,
+                            tracking[nome]
+                        );
+                    }
+                });
+
+                link.href = url.toString();
+            } catch (erro) {
+                console.warn(
+                    "[Tracking] Erro ao atualizar link:",
+                    erro
+                );
+            }
+        });
+    }
+
+    // Funciona mesmo se o DOMContentLoaded já tiver ocorrido.
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            atualizarLinksCheckout
+        );
+    } else {
+        atualizarLinksCheckout();
+    }
 })();
 </script>
+
 
 
 </body>
