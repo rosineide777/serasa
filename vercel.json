@@ -1,9 +1,3 @@
 {
-  "version": 2,
-  "routes": [
-    {
-      "src": "/api/kiwify-webhook",
-      "dest": "/api/kiwify-webhook.js"
-    }
-  ]
+  "version": 2
 }
