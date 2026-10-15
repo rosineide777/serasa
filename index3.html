@@ -2970,8 +2970,11 @@
 
 
 
+<!-- Script de Rastreamento BeMob & Ads (Index 3 - Checkout) -->
 <script>
 (function () {
+    "use strict";
+
     const PARAMETROS_BEMOB = [
         "subid",
         "cid",
@@ -3086,7 +3089,7 @@
         return url;
     }
 
-    // 5. FUNÇÃO USADA PELO BOTÃO DE CHECKOUT
+    // 5. FUNÇÃO USADA PELO BOTÃO DE CHECKOUT (Garantida no escopo global)
     window.abrirCheckoutKiwify = function () {
         const url = criarUrlCheckout();
         window.location.href = url.toString();

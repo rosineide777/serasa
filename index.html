@@ -669,77 +669,130 @@
     });
 </script>
 
-<!-- Script de Rastreamento BeMob & Ads (Atualizado e Otimizado) -->
+<!-- Rastreamento de parâmetros: Google Ads + BeMob -->
 <script>
 (function () {
-    // 1. LISTA DE PARÂMETROS
-    const PARAMETROS_BEMOB = ["subid", "cid", "clickid", "sub_id"];
-    const PARAMETROS_ANUNCIO = ["fbclid", "gclid", "gbraid", "wbraid", "ttclid"];
+    "use strict";
 
-    const params = new URLSearchParams(window.location.search);
+    const PARAMETROS = [
+        "gclid",
+        "gbraid",
+        "wbraid",
+        "subid",
+        "cid",
+        "clickid",
+        "sub_id"
+    ];
 
-    // 2. SALVA OS PARÂMETROS DA URL NO LOCALSTORAGE
-    function salvarParametro(nome) {
-        const valor = params.get(nome);
-        if (valor) {
-            try {
-                localStorage.setItem(nome, valor);
-            } catch (erro) {
-                console.warn("[Tracking] Não foi possível salvar:", nome);
-            }
+    const CHAVE_SUBID = "bemob_subid";
+
+    function lerStorage(chave) {
+        try {
+            return localStorage.getItem(chave) || "";
+        } catch (e) {
+            return "";
         }
     }
 
-    PARAMETROS_BEMOB.forEach(salvarParametro);
-    PARAMETROS_ANUNCIO.forEach(salvarParametro);
+    function salvarStorage(chave, valor) {
+        if (!valor) return;
 
-    // Identifica e salva o ID principal do BeMob
-    const subid =
-        params.get("subid") ||
-        params.get("cid") ||
-        params.get("clickid") ||
-        params.get("sub_id");
-
-    if (subid) {
-        localStorage.setItem("bemob_subid", subid);
+        try {
+            localStorage.setItem(chave, valor);
+        } catch (e) {
+            console.warn("[Tracking] Não foi possível salvar:", chave);
+        }
     }
 
-    // 3. RECUPERA OS DADOS GUARDADOS
-    const bemobSubid = localStorage.getItem("bemob_subid") || "";
-    const fbclid = localStorage.getItem("fbclid") || "";
-    const gclid = localStorage.getItem("gclid") || "";
-    const gbraid = localStorage.getItem("gbraid") || "";
-    const wbraid = localStorage.getItem("wbraid") || "";
-    const ttclid = localStorage.getItem("ttclid") || "";
+    function obterParametros() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dados = {};
 
-    // 4. ATUALIZA OS LINKS DA PÁGINA AUTOMATICAMENTE
-    document.addEventListener("DOMContentLoaded", function () {
-        const links = document.querySelectorAll("a[href]");
+        PARAMETROS.forEach(function (nome) {
+            const valor = urlParams.get(nome);
 
-        links.forEach(link => {
+            if (valor) {
+                salvarStorage(nome, valor);
+            }
+
+            dados[nome] = valor || lerStorage(nome);
+        });
+
+        const subid =
+            urlParams.get("subid") ||
+            urlParams.get("cid") ||
+            urlParams.get("clickid") ||
+            urlParams.get("sub_id") ||
+            lerStorage(CHAVE_SUBID) ||
+            dados.subid ||
+            dados.cid ||
+            dados.clickid ||
+            dados.sub_id ||
+            "";
+
+        if (subid) {
+            salvarStorage(CHAVE_SUBID, subid);
+        }
+
+        dados.subid = subid;
+
+        return dados;
+    }
+
+    function atualizarLinksInternos() {
+        const dados = obterParametros();
+
+        document.querySelectorAll("a[href]").forEach(function (link) {
             try {
-                // Filtra apenas links internos ou de navegação
-                if (link.href.startsWith("javascript:") || link.href.startsWith("#")) return;
+                const href = link.getAttribute("href");
 
-                const url = new URL(link.href, window.location.origin);
-
-                // Injeta os parâmetros para a próxima página
-                if (bemobSubid) {
-                    url.searchParams.set("subid", bemobSubid);
-                    url.searchParams.set("cid", bemobSubid); // Envia ambos para garantir compatibilidade
+                if (
+                    !href ||
+                    href.startsWith("#") ||
+                    href.startsWith("javascript:") ||
+                    href.startsWith("mailto:") ||
+                    href.startsWith("tel:")
+                ) {
+                    return;
                 }
-                if (fbclid) url.searchParams.set("fbclid", fbclid);
-                if (gclid) url.searchParams.set("gclid", gclid);
-                if (gbraid) url.searchParams.set("gbraid", gbraid);
-                if (wbraid) url.searchParams.set("wbraid", wbraid);
-                if (ttclid) url.searchParams.set("ttclid", ttclid);
+
+                const url = new URL(href, window.location.href);
+
+                // Não altera links externos, incluindo checkout e plataformas de anúncios.
+                if (url.origin !== window.location.origin) {
+                    return;
+                }
+
+                if (dados.subid) {
+                    url.searchParams.set("subid", dados.subid);
+                }
+
+                ["gclid", "gbraid", "wbraid"].forEach(function (nome) {
+                    if (dados[nome]) {
+                        url.searchParams.set(nome, dados[nome]);
+                    }
+                });
 
                 link.href = url.toString();
             } catch (e) {
-                console.warn("[Tracking] Erro ao atualizar link:", link.href, e);
+                console.warn("[Tracking] Erro ao processar link interno.");
             }
         });
-    });
+    }
+
+    // Dados disponíveis para os outros scripts da página.
+    window.TRACKING_DATA = obterParametros();
+
+    // Funciona tanto antes como depois do carregamento do HTML.
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            atualizarLinksInternos,
+            { once: true }
+        );
+    } else {
+        atualizarLinksInternos();
+    }
 })();
 </script>
 
