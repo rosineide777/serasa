@@ -2970,7 +2970,7 @@
 
 
 
-<!-- Script de Rastreamento (Index 3 - Checkout) -->
+<!-- Script de Rastreamento (Index 3 - Checkout Corrigido) -->
 <script>
 (function () {
     "use strict";
@@ -3007,33 +3007,38 @@
         window.history.replaceState({}, "", novaUrl);
     }
 
-    // Atualiza os links de checkout da Kiwify de forma limpa
+    // Função central que monta a URL pronta da Kiwify
+    function montarUrlKiwify() {
+        const url = new URL("https://pay.kiwify.com.br/KaqHOEX");
+        url.searchParams.set("hideCard", "true");
+        url.searchParams.set("region", "br");
+
+        if (subid) {
+            url.searchParams.set("src", subid);
+            url.searchParams.set("subid", subid);
+        }
+
+        PARAMETROS_ANUNCIO.forEach(function (nome) {
+            let valor = params.get(nome) || localStorage.getItem(nome);
+            if (valor) url.searchParams.set(nome, valor);
+        });
+
+        return url.toString();
+    }
+
+    // DISPONIBILIZA A FUNÇÃO GLOBAL EXATA QUE SEU BOTÃO CHAMA
+    window.abrirCheckoutKiwify = function () {
+        window.location.href = montarUrlKiwify();
+    };
+
+    // Atualiza também caso exista algum link <a> apontando para a Kiwify
     document.addEventListener("DOMContentLoaded", function () {
+        const urlFinal = montarUrlKiwify();
         document.querySelectorAll("a[href]").forEach(function (link) {
-            try {
-                const href = link.getAttribute("href");
-                if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
-
-                const url = new URL(href, window.location.href);
-
-                if (url.hostname.includes("kiwify.com.br")) {
-                    url.search = ""; // Limpa parâmetros velhos da URL do checkout
-                    url.searchParams.set("hideCard", "true");
-                    url.searchParams.set("region", "br");
-
-                    if (subid) {
-                        url.searchParams.set("src", subid);
-                        url.searchParams.set("subid", subid);
-                    }
-
-                    PARAMETROS_ANUNCIO.forEach(function (nome) {
-                        let valor = params.get(nome) || localStorage.getItem(nome);
-                        if (valor) url.searchParams.set(nome, valor);
-                    });
-
-                    link.href = url.toString();
-                }
-            } catch (e) {}
+            const href = link.getAttribute("href");
+            if (href && href.includes("kiwify.com.br")) {
+                link.href = urlFinal;
+            }
         });
     });
 })();
