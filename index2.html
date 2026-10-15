@@ -538,150 +538,50 @@
         });
     </script>
 
-<!-- Rastreamento e Persistência de Parâmetros: Google Ads + BeMob (Index 2) -->
+<!-- Script de Rastreamento (Index 2) -->
 <script>
 (function () {
     "use strict";
 
     const PARAMETROS_BEMOB = ["subid", "cid", "clickid", "sub_id"];
-    const PARAMETROS_ANUNCIO = ["fbclid", "gclid", "gbraid", "wbraid", "ttclid"];
-
     const params = new URLSearchParams(window.location.search);
 
-    function lerStorage(chave) {
-        try {
-            return localStorage.getItem(chave) || "";
-        } catch (e) {
-            return "";
+    function obterSubidValido() {
+        for (let i = 0; i < PARAMETROS_BEMOB.length; i++) {
+            let val = params.get(PARAMETROS_BEMOB[i]);
+            if (val && !val.includes("TESTE") && !val.includes("nao_real")) return val;
         }
+        let salvo = localStorage.getItem("bemob_subid");
+        if (salvo && !salvo.includes("TESTE") && !salvo.includes("nao_real")) return salvo;
+        return "";
     }
 
-    function salvarStorage(chave, valor) {
-        if (!valor) return;
-        try {
-            localStorage.setItem(chave, valor);
-        } catch (e) {
-            console.warn("[Tracking] Não foi possível salvar no storage:", chave);
-        }
+    const subid = obterSubidValido();
+    if (subid) {
+        localStorage.setItem("bemob_subid", subid);
     }
 
-    // 1. Salva o que chegou diretamente na URL da página atual
-    PARAMETROS_BEMOB.forEach(function (param) {
-        const valor = params.get(param);
-        if (valor) salvarStorage(param, valor);
-    });
-
-    PARAMETROS_ANUNCIO.forEach(function (param) {
-        const valor = params.get(param);
-        if (valor) salvarStorage(param, valor);
-    });
-
-    // 2. Define o SUBID principal (da URL ou recuperado do localStorage)
-    const subidURL =
-        params.get("subid") ||
-        params.get("cid") ||
-        params.get("clickid") ||
-        params.get("sub_id");
-
-    if (subidURL) {
-        salvarStorage("bemob_subid", subidURL);
+    // Exibe limpo na URL da index2 sem duplicar
+    if (subid) {
+        params.set("subid", subid);
+        const novaUrl = window.location.pathname + "?" + params.toString();
+        window.history.replaceState({}, "", novaUrl);
     }
 
-    // 3. Consolidação dos dados (prioriza URL, fallback no localStorage)
-    const bemobSubid = subidURL || lerStorage("bemob_subid");
-    const fbclid = params.get("fbclid") || lerStorage("fbclid");
-    const gclid = params.get("gclid") || lerStorage("gclid");
-    const gbraid = params.get("gbraid") || lerStorage("gbraid");
-    const wbraid = params.get("wbraid") || lerStorage("wbraid");
-    const ttclid = params.get("ttclid") || lerStorage("ttclid");
-
-    // Re-salva os consolidados para garantir consistência em abas/páginas
-    if (bemobSubid) salvarStorage("bemob_subid", bemobSubid);
-    if (fbclid) salvarStorage("fbclid", fbclid);
-    if (gclid) salvarStorage("gclid", gclid);
-    if (gbraid) salvarStorage("gbraid", gbraid);
-    if (wbraid) salvarStorage("wbraid", wbraid);
-    if (ttclid) salvarStorage("ttclid", ttclid);
-
-    // 4. Função para atualizar os links <a> presentes na página
-    function atualizarLinksInternos() {
-        const links = document.querySelectorAll("a[href]");
-
-        links.forEach(function (link) {
+    // Atualiza os links para a index3 levando o subid limpo
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("a[href]").forEach(function (link) {
             try {
                 const href = link.getAttribute("href");
-
-                if (
-                    !href ||
-                    href.startsWith("javascript:") ||
-                    href.startsWith("#") ||
-                    href.startsWith("mailto:") ||
-                    href.startsWith("tel:")
-                ) {
-                    return;
-                }
-
+                if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
                 const url = new URL(href, window.location.href);
-
-                // Não altera links externos
-                if (url.origin !== window.location.origin) {
-                    return;
+                if (url.origin === window.location.origin && subid) {
+                    url.searchParams.set("subid", subid);
+                    link.href = url.toString();
                 }
-
-                if (bemobSubid) {
-                    url.searchParams.set("subid", bemobSubid);
-                    url.searchParams.set("cid", bemobSubid);
-                }
-                if (fbclid) url.searchParams.set("fbclid", fbclid);
-                if (gclid) url.searchParams.set("gclid", gclid);
-                if (gbraid) url.searchParams.set("gbraid", gbraid);
-                if (wbraid) url.searchParams.set("wbraid", wbraid);
-                if (ttclid) url.searchParams.set("ttclid", ttclid);
-
-                link.href = url.toString();
-            } catch (e) {
-                console.warn("[Tracking] Erro ao atualizar link interno:", e);
-            }
+            } catch (e) {}
         });
-    }
-
-    // 5. Função global de navegação programática para o index3.html
-    window.irParaIndex3 = function (destino = "index3.html") {
-        try {
-            const url = new URL(destino, window.location.href);
-
-            if (bemobSubid) {
-                url.searchParams.set("subid", bemobSubid);
-                url.searchParams.set("cid", bemobSubid);
-            }
-            if (fbclid) url.searchParams.set("fbclid", fbclid);
-            if (gclid) url.searchParams.set("gclid", gclid);
-            if (gbraid) url.searchParams.set("gbraid", gbraid);
-            if (wbraid) url.searchParams.set("wbraid", wbraid);
-            if (ttclid) url.searchParams.set("ttclid", ttclid);
-
-            window.location.href = url.toString();
-        } catch (e) {
-            window.location.href = destino;
-        }
-    };
-
-    // 6. Torna os dados consolidados visíveis globalmente na página
-    window.TRACKING_DATA = {
-        subid: bemobSubid,
-        fbclid: fbclid,
-        gclid: gclid,
-        gbraid: gbraid,
-        wbraid: wbraid,
-        ttclid: ttclid
-    };
-
-    // Executa no carregamento do DOM
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", atualizarLinksInternos, { once: true });
-    } else {
-        atualizarLinksInternos();
-    }
+    });
 })();
 </script>
 

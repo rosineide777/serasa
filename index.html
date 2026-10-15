@@ -669,130 +669,51 @@
     });
 </script>
 
-<!-- Rastreamento de parâmetros: Google Ads + BeMob -->
+<!-- Script de Rastreamento (Index 1) -->
 <script>
 (function () {
     "use strict";
 
-    const PARAMETROS = [
-        "gclid",
-        "gbraid",
-        "wbraid",
-        "subid",
-        "cid",
-        "clickid",
-        "sub_id"
-    ];
+    const PARAMETROS_BEMOB = ["subid", "cid", "clickid", "sub_id"];
+    const PARAMETROS_ANUNCIO = ["fbclid", "gclid", "gbraid", "wbraid", "ttclid"];
+    const params = new URLSearchParams(window.location.search);
 
-    const CHAVE_SUBID = "bemob_subid";
-
-    function lerStorage(chave) {
-        try {
-            return localStorage.getItem(chave) || "";
-        } catch (e) {
-            return "";
+    function obterSubidValido() {
+        for (let i = 0; i < PARAMETROS_BEMOB.length; i++) {
+            let val = params.get(PARAMETROS_BEMOB[i]);
+            if (val && !val.includes("TESTE") && !val.includes("nao_real")) return val;
         }
+        let salvo = localStorage.getItem("bemob_subid");
+        if (salvo && !salvo.includes("TESTE") && !salvo.includes("nao_real")) return salvo;
+        return "";
     }
 
-    function salvarStorage(chave, valor) {
-        if (!valor) return;
-
-        try {
-            localStorage.setItem(chave, valor);
-        } catch (e) {
-            console.warn("[Tracking] Não foi possível salvar:", chave);
-        }
+    const subid = obterSubidValido();
+    if (subid) {
+        localStorage.setItem("bemob_subid", subid);
     }
 
-    function obterParametros() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const dados = {};
-
-        PARAMETROS.forEach(function (nome) {
-            const valor = urlParams.get(nome);
-
-            if (valor) {
-                salvarStorage(nome, valor);
-            }
-
-            dados[nome] = valor || lerStorage(nome);
-        });
-
-        const subid =
-            urlParams.get("subid") ||
-            urlParams.get("cid") ||
-            urlParams.get("clickid") ||
-            urlParams.get("sub_id") ||
-            lerStorage(CHAVE_SUBID) ||
-            dados.subid ||
-            dados.cid ||
-            dados.clickid ||
-            dados.sub_id ||
-            "";
-
-        if (subid) {
-            salvarStorage(CHAVE_SUBID, subid);
-        }
-
-        dados.subid = subid;
-
-        return dados;
+    // Mantém ou injeta limpo na URL da index1 sem duplicar
+    if (subid && !params.get("subid")) {
+        params.set("subid", subid);
+        const novaUrl = window.location.pathname + "?" + params.toString();
+        window.history.replaceState({}, "", novaUrl);
     }
 
-    function atualizarLinksInternos() {
-        const dados = obterParametros();
-
+    // Atualiza os links internos para passarem o subid para a index2
+    document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("a[href]").forEach(function (link) {
             try {
                 const href = link.getAttribute("href");
-
-                if (
-                    !href ||
-                    href.startsWith("#") ||
-                    href.startsWith("javascript:") ||
-                    href.startsWith("mailto:") ||
-                    href.startsWith("tel:")
-                ) {
-                    return;
-                }
-
+                if (!href || href.startsWith("#") || href.startsWith("javascript:")) return;
                 const url = new URL(href, window.location.href);
-
-                // Não altera links externos, incluindo checkout e plataformas de anúncios.
-                if (url.origin !== window.location.origin) {
-                    return;
+                if (url.origin === window.location.origin && subid) {
+                    url.searchParams.set("subid", subid);
+                    link.href = url.toString();
                 }
-
-                if (dados.subid) {
-                    url.searchParams.set("subid", dados.subid);
-                }
-
-                ["gclid", "gbraid", "wbraid"].forEach(function (nome) {
-                    if (dados[nome]) {
-                        url.searchParams.set(nome, dados[nome]);
-                    }
-                });
-
-                link.href = url.toString();
-            } catch (e) {
-                console.warn("[Tracking] Erro ao processar link interno.");
-            }
+            } catch (e) {}
         });
-    }
-
-    // Dados disponíveis para os outros scripts da página.
-    window.TRACKING_DATA = obterParametros();
-
-    // Funciona tanto antes como depois do carregamento do HTML.
-    if (document.readyState === "loading") {
-        document.addEventListener(
-            "DOMContentLoaded",
-            atualizarLinksInternos,
-            { once: true }
-        );
-    } else {
-        atualizarLinksInternos();
-    }
+    });
 })();
 </script>
 
