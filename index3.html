@@ -3008,16 +3008,16 @@
     PARAMETROS_BEMOB.forEach(salvarParametro);
     PARAMETROS_ANUNCIO.forEach(salvarParametro);
 
-    // 2. SALVA O IDENTIFICADOR DO BEMOB
-    const subid =
+    // 2. SALVA O IDENTIFICADOR DO BEMOB (Prioridade para o que vier na URL atual ou localStorage)
+    const subidDaUrl =
         params.get("subid") ||
         params.get("cid") ||
         params.get("clickid") ||
         params.get("sub_id");
 
-    if (subid) {
+    if (subidDaUrl) {
         try {
-            localStorage.setItem("bemob_subid", subid);
+            localStorage.setItem("bemob_subid", subidDaUrl);
         } catch (erro) {
             console.warn(
                 "[Tracking] Não foi possível salvar o subid."
@@ -3031,6 +3031,10 @@
 
         try {
             tracking.bemobSubid =
+                params.get("subid") ||
+                params.get("cid") ||
+                params.get("clickid") ||
+                params.get("sub_id") ||
                 localStorage.getItem("bemob_subid") ||
                 localStorage.getItem("subid") ||
                 localStorage.getItem("cid") ||
@@ -3040,7 +3044,7 @@
 
             PARAMETROS_ANUNCIO.forEach(function (nome) {
                 tracking[nome] =
-                    localStorage.getItem(nome) || "";
+                    params.get(nome) || localStorage.getItem(nome) || "";
             });
         } catch (erro) {
             console.warn(
@@ -3066,9 +3070,10 @@
 
         const tracking = obterTracking();
 
-        // Parâmetros de rastreamento da Kiwify/BeMob.
+        // Parâmetros de rastreamento da Kiwify/BeMob (utilizando 'src' e redundância 'subid')
         if (tracking.bemobSubid) {
             url.searchParams.set("src", tracking.bemobSubid);
+            url.searchParams.set("subid", tracking.bemobSubid);
         }
 
         // Preserva os identificadores de anúncio na URL.
@@ -3110,6 +3115,10 @@
                 if (tracking.bemobSubid) {
                     url.searchParams.set(
                         "src",
+                        tracking.bemobSubid
+                    );
+                    url.searchParams.set(
+                        "subid",
                         tracking.bemobSubid
                     );
                 }

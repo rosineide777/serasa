@@ -614,62 +614,62 @@
         </div>
     </footer>
 
-    <!-- Scripts de Interatividade -->
-    <script>
-        // Carrossel
-        const carousel = document.getElementById('testimonial-carousel');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const indicator = document.getElementById('carousel-indicator');
-        const cards = document.querySelectorAll('.testimonial-card');
-        const totalCards = cards.length;
+    <!-- Scripts de Interatividade (Intactos do seu código original) -->
+<script>
+    // Carrossel
+    const carousel = document.getElementById('testimonial-carousel');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const indicator = document.getElementById('carousel-indicator');
+    const cards = document.querySelectorAll('.testimonial-card');
+    const totalCards = cards.length;
 
-        function updateCarouselState() {
-            const scrollLeft = carousel.scrollLeft;
-            const cardWidth = cards[0].offsetWidth + 16;
-            const currentIndex = Math.min(Math.round(scrollLeft / cardWidth) + 1, totalCards);
-            
-            indicator.innerText = `${currentIndex}/${totalCards}`;
-            prevBtn.disabled = scrollLeft <= 10;
-        }
+    function updateCarouselState() {
+        const scrollLeft = carousel.scrollLeft;
+        const cardWidth = cards[0].offsetWidth + 16;
+        const currentIndex = Math.min(Math.round(scrollLeft / cardWidth) + 1, totalCards);
+        
+        indicator.innerText = `${currentIndex}/${totalCards}`;
+        prevBtn.disabled = scrollLeft <= 10;
+    }
 
-        prevBtn.addEventListener('click', () => {
-            const cardWidth = cards[0].offsetWidth + 16;
-            carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+    prevBtn.addEventListener('click', () => {
+        const cardWidth = cards[0].offsetWidth + 16;
+        carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+    });
+
+    nextBtn.addEventListener('click', () => {
+        const cardWidth = cards[0].offsetWidth + 16;
+        carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
+    });
+
+    carousel.addEventListener('scroll', updateCarouselState);
+    window.addEventListener('resize', updateCarouselState);
+    updateCarouselState();
+
+    // FAQ Acordeão
+    const faqButtons = document.querySelectorAll('.faq-btn');
+
+    faqButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const content = btn.nextElementSibling;
+            const icon = btn.querySelector('.faq-icon');
+            const isHidden = content.classList.contains('hidden');
+
+            // Fechar todos
+            document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.faq-icon').forEach(i => i.classList.remove('rotate-180'));
+
+            // Se estava escondido, abre este
+            if (isHidden) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            }
         });
+    });
+</script>
 
-        nextBtn.addEventListener('click', () => {
-            const cardWidth = cards[0].offsetWidth + 16;
-            carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
-        });
-
-        carousel.addEventListener('scroll', updateCarouselState);
-        window.addEventListener('resize', updateCarouselState);
-        updateCarouselState();
-
-        // FAQ Acordeão
-        const faqButtons = document.querySelectorAll('.faq-btn');
-
-        faqButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const content = btn.nextElementSibling;
-                const icon = btn.querySelector('.faq-icon');
-                const isHidden = content.classList.contains('hidden');
-
-                // Fechar todos
-                document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
-                document.querySelectorAll('.faq-icon').forEach(i => i.classList.remove('rotate-180'));
-
-                // Se estava escondido, abre este
-                if (isHidden) {
-                    content.classList.remove('hidden');
-                    icon.classList.add('rotate-180');
-                }
-            });
-        });
-    </script>
-
-
+<!-- Script de Rastreamento BeMob & Ads (Atualizado e Otimizado) -->
 <script>
 (function () {
     // 1. LISTA DE PARÂMETROS
@@ -693,6 +693,7 @@
     PARAMETROS_BEMOB.forEach(salvarParametro);
     PARAMETROS_ANUNCIO.forEach(salvarParametro);
 
+    // Identifica e salva o ID principal do BeMob
     const subid =
         params.get("subid") ||
         params.get("cid") ||
@@ -713,17 +714,20 @@
 
     // 4. ATUALIZA OS LINKS DA PÁGINA AUTOMATICAMENTE
     document.addEventListener("DOMContentLoaded", function () {
-        // Seleciona todos os links da página (botões para a próxima página ou checkout)
         const links = document.querySelectorAll("a[href]");
 
         links.forEach(link => {
             try {
-                // Filtra apenas links internos (ex: index2.html, index3.html) ou links do checkout
+                // Filtra apenas links internos ou de navegação
                 if (link.href.startsWith("javascript:") || link.href.startsWith("#")) return;
 
                 const url = new URL(link.href, window.location.origin);
 
-                if (bemobSubid) url.searchParams.set("cid", bemobSubid);
+                // Injeta os parâmetros para a próxima página
+                if (bemobSubid) {
+                    url.searchParams.set("subid", bemobSubid);
+                    url.searchParams.set("cid", bemobSubid); // Envia ambos para garantir compatibilidade
+                }
                 if (fbclid) url.searchParams.set("fbclid", fbclid);
                 if (gclid) url.searchParams.set("gclid", gclid);
                 if (gbraid) url.searchParams.set("gbraid", gbraid);
