@@ -2970,71 +2970,33 @@
 
 
 
-<!-- Script de Checkout BeMob (Index 3 - Apenas Subid Limpo) -->
+
+<!-- SCRIPT DE CHECKOUT KIWIFY - SEM BEMOB -->
 <script>
 (function () {
     "use strict";
 
-    const PARAMETROS_BEMOB = ["subid", "cid", "clickid", "sub_id"];
-    const params = new URLSearchParams(window.location.search);
-
-    // 1. Limpeza de qualquer lixo ou teste anterior no navegador
-    const subidAtual = localStorage.getItem("bemob_subid");
-    if (subidAtual && (subidAtual.toUpperCase().includes("TESTE") || subidAtual.toUpperCase().includes("NAO_REAL"))) {
-        localStorage.removeItem("bemob_subid");
-    }
-
-    // 2. Captura apenas um subid válido
-    function obterSubidValido() {
-        for (let i = 0; i < PARAMETROS_BEMOB.length; i++) {
-            let val = params.get(PARAMETROS_BEMOB[i]);
-            if (val && !val.toUpperCase().includes("TESTE") && !val.toUpperCase().includes("NAO_REAL")) {
-                return val;
-            }
-        }
-        let salvo = localStorage.getItem("bemob_subid");
-        if (salvo && !salvo.toUpperCase().includes("TESTE") && !salvo.toUpperCase().includes("NAO_REAL")) {
-            return salvo;
-        }
-        return "";
-    }
-
-    const subid = obterSubidValido();
-    if (subid) {
-        localStorage.setItem("bemob_subid", subid);
-    }
-
-    // Exibe limpo na URL da index3 sem duplicar
-    if (subid) {
-        params.set("subid", subid);
-        const novaUrl = window.location.pathname + "?" + params.toString();
-        window.history.replaceState({}, "", novaUrl);
-    }
-
-    // 3. Monta a URL da Kiwify levando SOMENTE o subid do BeMob
     function montarUrlKiwify() {
         const url = new URL("https://pay.kiwify.com.br/KaqHOEX");
+
         url.searchParams.set("hideCard", "true");
         url.searchParams.set("region", "br");
-
-        if (subid) {
-            url.searchParams.set("src", subid);
-            url.searchParams.set("subid", subid);
-        }
 
         return url.toString();
     }
 
-    // 4. Função global acionada pelo botão "Fechar acordo"
+    // Mantém o botão Fechar acordo funcionando
     window.abrirCheckoutKiwify = function () {
         window.location.href = montarUrlKiwify();
     };
 
-    // Atualiza links <a> caso existam
+    // Atualiza links que apontam diretamente para a Kiwify
     document.addEventListener("DOMContentLoaded", function () {
         const urlFinal = montarUrlKiwify();
-        document.querySelectorAll("a[href]").forEach(function (link) {
+
+        document.querySelectorAll('a[href]').forEach(function (link) {
             const href = link.getAttribute("href");
+
             if (href && href.includes("kiwify.com.br")) {
                 link.href = urlFinal;
             }
@@ -3042,6 +3004,7 @@
     });
 })();
 </script>
+
 
 
 
